@@ -5,14 +5,14 @@ This document explains how to install, run, test, and verify the Suraksha hybrid
 ## Prerequisites
 
 - Node.js 18 or newer
-- Python 3.10 or newer
+- Python 3.10 to 3.13 (Python 3.14+ not recommended due to missing prebuilt wheels on Windows)
 - PowerShell
 - A browser
 - MongoDB is not required for the current development flow. The backend uses an in-memory repository.
 
 ## Install Dependencies
 
-Open PowerShell in the repository root (`D:\Suraksha`) and run:
+Open PowerShell in the repository root and run:
 
 ```powershell
 cd backend
@@ -22,30 +22,44 @@ npm install
 cd ..
 ```
 
-Create and activate the Python environment if it is not already active:
+Create and activate the Python environment using Python 3.13 (or 3.10-3.13):
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+py -3.13 -m venv .venv-py313
+.\.venv-py313\Scripts\Activate.ps1
 pip install -r ml-service\requirements.txt
-pip install requests
 ```
 
 If PowerShell blocks activation for the current process:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
-.\.venv\Scripts\Activate.ps1
+.\.venv-py313\Scripts\Activate.ps1
 ```
 
 ## Start the Application
 
-Use one PowerShell terminal per service. Keep each terminal open.
+### Option A: Run Entire Stack at Once (Recommended)
 
-### 1. Backend API
+Run the root automation script in PowerShell:
 
 ```powershell
-cd D:\Suraksha\backend
+.\run-all.ps1
+```
+
+This starts all three services in their own PowerShell windows:
+- Backend: `http://localhost:5000`
+- ML Service: `http://localhost:8000`
+- Frontend Dashboard: `http://localhost:5173`
+
+---
+
+### Option B: Run Services Manually (One Terminal per Service)
+
+#### 1. Backend API
+
+```powershell
+cd backend
 npm start
 ```
 
@@ -58,20 +72,27 @@ Persistence mode: in-memory ...
 
 The backend API is available under `http://localhost:5000/api`.
 
-### 2. Frontend Dashboard
+#### 2. Frontend Dashboard
 
 ```powershell
-cd D:\Suraksha\frontend
+cd frontend
 npm run dev
 ```
 
 Open `http://localhost:5173/` in a browser.
 
-### 3. ML Service (Optional)
+#### 3. ML Service
+
+Using helper script:
 
 ```powershell
-cd D:\Suraksha
-.\.venv\Scripts\Activate.ps1
+.\start-ml.ps1
+```
+
+Or manually:
+
+```powershell
+.\.venv-py313\Scripts\Activate.ps1
 python -m uvicorn app.main:app --app-dir ml-service --reload --port 8000
 ```
 
@@ -82,13 +103,12 @@ The service allows browser requests from the local Vite dashboard origins
 `FRONTEND_ORIGINS` to a comma-separated list when using a different frontend
 origin.
 
-### 4. Traffic Simulator (Optional)
+#### 4. Traffic Simulator (Optional)
 
 Start the backend first, then run:
 
 ```powershell
-cd D:\Suraksha
-.\.venv\Scripts\Activate.ps1
+.\.venv-py313\Scripts\Activate.ps1
 python traffic-simulator\simulator.py
 ```
 
@@ -190,12 +210,13 @@ Expected: the ML response contains `prediction`, `confidence`, and `anomalyScore
 Run both production builds from the repository root:
 
 ```powershell
-cd D:\Suraksha\backend
+cd backend
 node --check src\server.js
 Get-ChildItem src -Recurse -Filter *.js | ForEach-Object { node --check $_.FullName }
 
 cd ..\frontend
 npm run build
+cd ..
 ```
 
 A successful frontend verification ends with `built in ...` and creates `frontend/dist/`.
@@ -207,8 +228,8 @@ A successful frontend verification ends with `built in ...` and creates `fronten
 Run the command from the service directory. The root folder does not contain a `package.json`:
 
 ```powershell
-cd D:\Suraksha\backend   # backend commands
-cd D:\Suraksha\frontend  # frontend commands
+cd backend   # backend commands
+cd frontend  # frontend commands
 ```
 
 ### Port already in use

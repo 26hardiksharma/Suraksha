@@ -12,10 +12,14 @@ An explainable hybrid intrusion detection and prevention system mini project bas
 
 ## Getting started
 
-1. Install dependencies in `backend/` and `frontend/` with `npm install`.
-2. Run the backend with `cd backend && npm start`.
-3. Launch the frontend with `cd frontend && npm run dev`.
-4. Run the ML service and traffic simulator when those integrations are needed.
+- **One-click all services**: Run `.\run-all.ps1` in PowerShell.
+- Or start manually:
+  1. Install dependencies in `backend/` and `frontend/` with `npm install`.
+  2. Setup ML environment with `py -3.13 -m venv .venv-py313` and `pip install -r ml-service\requirements.txt`.
+  3. Run backend with `cd backend && npm start`.
+  4. Launch frontend with `cd frontend && npm run dev`.
+  5. Run ML service with `.\start-ml.ps1`.
+  6. Run traffic simulator when needed with `python traffic-simulator\simulator.py`.
 
 The backend currently uses an in-memory repository so it can run without MongoDB during development. It exposes the traffic detection, alert, analytics, rule, blocked-IP, and AI routes; MongoDB persistence can be added behind the same route contracts.
 
